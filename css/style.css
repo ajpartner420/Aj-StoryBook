@@ -61,12 +61,3 @@
 .story-lang-en[hidden],.story-lang-hi[hidden]{display:none!important}
 .story-copy-note{font-size:12px;color:var(--muted);margin-top:8px}
 @media(max-width:680px){.story-page-head{grid-template-columns:76px 1fr}.story-page-cover{width:76px;height:100px}.story-page-head h1{font-size:21px}.story-page-tools{grid-column:1/-1}.story-chapter h2{font-size:21px}.story-chapter-nav{flex-wrap:wrap}.story-chapter-nav .muted{order:3;width:100%;text-align:center}}
-
-
-/* AJ StoryBooks: featured story + category buttons side by side */
-.featured-side-layout{display:grid !important;grid-template-columns:minmax(0,1fr) 280px !important;gap:20px !important;align-items:stretch !important;}
-.featured-side-layout #autoFeatured{min-width:0 !important;}
-.featured-side-layout .quick-list{display:flex !important;flex-direction:column !important;gap:12px !important;margin:0 !important;}
-.featured-side-layout .quick-card{width:100% !important;min-height:70px !important;box-sizing:border-box !important;}
-@media(max-width:680px){.featured-side-layout{grid-template-columns:1fr !important;}.featured-side-layout .quick-list{display:grid !important;grid-template-columns:1fr 1fr !important;}}
-@media(max-width:520px){.featured-side-layout .quick-list{grid-template-columns:1fr !important;}}
