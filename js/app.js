@@ -144,10 +144,93 @@ function storyCard(s){
 function comicTiles(){return comics.map((c,i)=>`<a class="comic-tile" href="comic.html?page=${i+1}"><img src="${c.cover}" alt="${tr(c.title)}" loading="lazy"><span>${tr(c.title)}</span></a>`).join("")}
 function home(){
  return `<main class="container"><section class="hero"><div class="hero-copy"><div class="eyebrow">${t("welcome")}</div><h1>AJ StoryBooks</h1><h2 style="margin:0 0 8px;font-size:25px">${t("tagline")}</h2><p>${t("intro")}</p><a class="btn" href="stories.html">${t("explore")}</a></div></section>
- <section class="section" id="autoFeaturedSection"><div class="section-head"><div><h2>${t("featured")}</h2><p>${t("today")}</p></div><a class="textlink" href="stories.html">${t("viewAll")}</a></div><div id="autoFeatured"><div class="feature-card"><div class="feature-copy"><h3>${lang==="en"?"Loading stories…":"कहानियाँ लोड हो रही हैं…"}</h3></div></div></div></section>
- <div class="quick-list" style="margin-bottom:34px"><a class="quick-card" href="stories.html"><span class="quick-icon">📚</span><span><strong>${t("novelStories")}</strong><small>${t("longStories")}</small></span>→</a><a class="quick-card" href="comic.html"><span class="quick-icon">🎨</span><span><strong>${t("comicStories")}</strong><small>${t("withPictures")}</small></span>→</a><a class="quick-card" href="stories.html"><span class="quick-icon">🖼️</span><span><strong>${t("photoStories")}</strong><small>${t("inPictures")}</small></span>→</a><a class="quick-card" href="stories.html"><span class="quick-icon">🎧</span><span><strong>${t("audiobook")}</strong><small>${t("comingSoon")}</small></span>→</a></div>
- <section class="section"><div class="section-head"><div><h2>${t("latest")}</h2><p>${t("discover")}</p></div><a class="textlink" href="stories.html">${t("viewAll")}</a></div><div class="story-grid" id="autoLatest"><div class="empty">${lang==="en"?"Loading…":"लोड हो रहा है…"}</div></div></section>
- <section class="section"><div class="section-head"><div><h2>${t("popularComics")}</h2><p>${t("comicsSub")}</p></div><a class="textlink" href="comic.html">${t("viewAll")}</a></div><div class="comic-strip">${comicTiles()}</div></section></main>`;
+
+ <section class="section" id="autoFeaturedSection">
+
+   <div class="section-head">
+     <div>
+       <h2>${t("featured")}</h2>
+       <p>${t("today")}</p>
+     </div>
+     <a class="textlink" href="stories.html">${t("viewAll")}</a>
+   </div>
+
+   <div class="featured-grid">
+
+     <div id="autoFeatured">
+       <div class="feature-card">
+         <div class="feature-copy">
+           <h3>${lang==="en"?"Loading stories…":"कहानियाँ लोड हो रही हैं…"}</h3>
+         </div>
+       </div>
+     </div>
+
+     <div class="quick-list">
+
+       <a class="quick-card" href="stories.html">
+         <span class="quick-icon">📚</span>
+         <span>
+           <strong>${t("novelStories")}</strong>
+           <small>${t("longStories")}</small>
+         </span>→
+       </a>
+
+       <a class="quick-card" href="comic.html">
+         <span class="quick-icon">🎨</span>
+         <span>
+           <strong>${t("comicStories")}</strong>
+           <small>${t("withPictures")}</small>
+         </span>→
+       </a>
+
+       <a class="quick-card" href="stories.html">
+         <span class="quick-icon">🖼️</span>
+         <span>
+           <strong>${t("photoStories")}</strong>
+           <small>${t("inPictures")}</small>
+         </span>→
+       </a>
+
+       <a class="quick-card" href="stories.html">
+         <span class="quick-icon">🎧</span>
+         <span>
+           <strong>${t("audiobook")}</strong>
+           <small>${t("comingSoon")}</small>
+         </span>→
+       </a>
+
+     </div>
+
+   </div>
+ </section>
+
+ <section class="section">
+   <div class="section-head">
+     <div>
+       <h2>${t("latest")}</h2>
+       <p>${t("discover")}</p>
+     </div>
+     <a class="textlink" href="stories.html">${t("viewAll")}</a>
+   </div>
+
+   <div class="story-grid" id="autoLatest">
+     <div class="empty">${lang==="en"?"Loading…":"लोड हो रहा है…"}</div>
+   </div>
+ </section>
+
+ <section class="section">
+   <div class="section-head">
+     <div>
+       <h2>${t("popularComics")}</h2>
+       <p>${t("comicsSub")}</p>
+     </div>
+     <a class="textlink" href="comic.html">${t("viewAll")}</a>
+   </div>
+
+   <div class="comic-strip">${comicTiles()}</div>
+ </section>
+
+ </main>`;
 }
 function listing(){
  return `<div class="page-banner"><div class="container"><h1>${t("ourStories")}</h1><p>${t("everyStory")}</p></div></div><main class="container"><div class="listing-tools"><input id="storySearch" placeholder="${t("searchGenre")}"><select id="sortStories"><option value="default">${t("sortFeatured")}</option><option value="az">${t("sortAZ")}</option><option value="chapters">${t("sortChapters")}</option></select></div><div class="filters" id="filters">${["All","Adventure","Mystery","Fantasy","Romance","Thriller","Sci-Fi","Kids","Drama"].map((g,i)=>`<button class="filter-btn ${i===0?"active":""}" data-filter="${g}">${g==="All"?t("all"):g}</button>`).join("")}</div><div class="section-head"><div><h2 id="resultTitle">${t("allStories")}</h2><p>${t("choose")}</p></div><span class="muted" id="resultCount"></span></div><div class="story-grid" id="storyGrid"></div></main>`;
