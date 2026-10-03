@@ -327,7 +327,15 @@ const stories = [
 
     status:"ongoing",
 
-chapters:[],
+chapters:[
+  {
+    number:1,
+    title:textPair(
+      "दादा जी का संदूक और मायावी शुरुआत",
+      "Grandfather's Chest and the Mysterious Beginning"
+    )
+  }
+],
     
     link:"stories/mayavi-exchange.html"
   },
