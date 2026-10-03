@@ -327,16 +327,22 @@ const stories = [
 
     status:"ongoing",
 
-chapters:[
-  {
-    number:1,
-    title:textPair(
-      "दादा जी का संदूक और मायावी शुरुआत",
-      "Grandfather's Chest and the Mysterious Beginning"
-    )
-  }
-],
-    
+    /*
+      IMPORTANT:
+      यह सिर्फ initial fallback है।
+      नीचे hydrateStandaloneStories()
+      असली HTML से chapter count update करेगा।
+    */
+    chapters:[
+      {
+        number:1,
+        title:textPair(
+          "दादा जी का संदूक और मायावी शुरुआत",
+          "Grandfather's Chest and the Mysterious Beginning"
+        )
+      }
+    ],
+
     link:"stories/mayavi-exchange.html"
   },
 
