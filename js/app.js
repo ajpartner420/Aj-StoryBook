@@ -327,7 +327,7 @@ const stories = [
 
     status:"ongoing",
 
-chapters:[]
+chapters:[],
     
     link:"stories/mayavi-exchange.html"
   },
