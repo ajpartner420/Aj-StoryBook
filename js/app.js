@@ -1948,325 +1948,417 @@ function applyStandaloneStoryLanguage(){
    GITHUB AUTOMATIC STORY DISCOVERY
    ========================================================= */
 
-async function discoverStandaloneStories(){
+async function discoverStandaloneStories() {
+    const discovered = [];
 
-  if(location.protocol === "file:"){
+    // ---------------------------------------------------------
+    // 1. BUILT-IN STORIES KO DIRECT HTML FILE SE READ KARO
+    // ---------------------------------------------------------
+    for (const base of [...stories]) {
 
-    return [];
-
-  }
-
-
-  let owner = "";
-  let repo = "";
-
-
-  const host =
-    location.hostname;
-
-
-  if(host.endsWith("github.io")){
-
-    owner =
-      host.split(".")[0];
-
-
-    const parts =
-      location.pathname
-        .split("/")
-        .filter(Boolean);
-
-
-    repo =
-      parts[0] || "";
-
-  }
-
-
-  const configured =
-    window.AJ_STORYBOOKS_REPO || "";
-
-
-  if(configured.includes("/")){
-
-    [owner,repo] =
-      configured.split("/");
-
-  }
-
-
-  if(!owner || !repo){
-
-    return [];
-
-  }
-
-
-  try{
-
-    const api =
-      `https://api.github.com/repos/${owner}/${repo}/contents/stories`;
-
-
-    const res =
-      await fetch(
-        api,
-        {
-          headers:{
-            Accept:
-              "application/vnd.github+json"
-          }
-        }
-      );
-
-
-    if(!res.ok){
-
-      return [];
-
-    }
-
-
-    const files =
-      await res.json();
-
-
-    const htmlFiles =
-      files.filter(
-        x =>
-          x.type === "file" &&
-          /\.html$/i.test(x.name) &&
-          x.name !== "story-template.html"
-      );
-
-
-    const found = [];
-
-
-    for(const f of htmlFiles){
-
-      try{
-
-        const r =
-          await fetch(
-            f.download_url
-          );
-
-
-        if(!r.ok){
-
-          continue;
-
+        if (!base.link || !/^stories\/[^/]+\.html$/i.test(base.link)) {
+            continue;
         }
 
+        try {
+            const url = new URL(base.link, location.href).href;
 
-        const text =
-          await r.text();
+            const response = await fetch(url, {
+                cache: "no-store"
+            });
 
+            if (!response.ok) {
+                console.warn(
+                    "Story HTML load nahi hua:",
+                    base.link,
+                    response.status
+                );
+                continue;
+            }
 
-        const doc =
-          new DOMParser()
-            .parseFromString(
-              text,
-              "text/html"
+            const html = await response.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+
+            // Story ke saare chapters directly HTML se nikalo
+            const chapterNodes = [
+                ...doc.querySelectorAll(
+                    ".story-chapter[data-chapter]"
+                )
+            ];
+
+            const chapters = chapterNodes.map((chapter, index) => {
+
+                const titleNode =
+                    chapter.querySelector("[data-chapter-title]");
+
+                const number =
+                    Number(chapter.dataset.chapter) || index + 1;
+
+                const hi =
+                    titleNode?.dataset.hi ||
+                    `अध्याय ${number}`;
+
+                const en =
+                    titleNode?.dataset.en ||
+                    `Chapter ${number}`;
+
+                return {
+                    number,
+                    title: {
+                        hi,
+                        en
+                    }
+                };
+            });
+
+            // Agar HTML me chapters mile
+            if (chapters.length > 0) {
+
+                const finalStory = {
+                    ...base,
+
+                    chapters: chapters,
+
+                    // Metadata bhi HTML se update karo
+                    title: {
+                        hi:
+                            doc
+                                .querySelector(
+                                    'meta[name="story-title-hi"]'
+                                )
+                                ?.getAttribute("content")
+                            || base.title?.hi
+                            || "",
+
+                        en:
+                            doc
+                                .querySelector(
+                                    'meta[name="story-title-en"]'
+                                )
+                                ?.getAttribute("content")
+                            || base.title?.en
+                            || ""
+                    },
+
+                    description: {
+                        hi:
+                            doc
+                                .querySelector(
+                                    'meta[name="story-desc-hi"]'
+                                )
+                                ?.getAttribute("content")
+                            || base.description?.hi
+                            || "",
+
+                        en:
+                            doc
+                                .querySelector(
+                                    'meta[name="story-desc-en"]'
+                                )
+                                ?.getAttribute("content")
+                            || base.description?.en
+                            || ""
+                    },
+
+                    cover:
+                        doc
+                            .querySelector(
+                                'meta[name="story-cover"]'
+                            )
+                            ?.getAttribute("content")
+                        || base.cover,
+
+                    genres:
+                        (
+                            doc
+                                .querySelector(
+                                    'meta[name="story-genres"]'
+                                )
+                                ?.getAttribute("content")
+                            || ""
+                        )
+                            .split(",")
+                            .map(x => x.trim())
+                            .filter(Boolean)
+                            .length
+                        ? (
+                            doc
+                                .querySelector(
+                                    'meta[name="story-genres"]'
+                                )
+                                ?.getAttribute("content")
+                            || ""
+                        )
+                            .split(",")
+                            .map(x => x.trim())
+                            .filter(Boolean)
+                        : base.genres,
+
+                    status:
+                        doc
+                            .querySelector(
+                                'meta[name="story-status"]'
+                            )
+                            ?.getAttribute("content")
+                        || base.status,
+
+                    feature:
+                        (
+                            doc
+                                .querySelector(
+                                    'meta[name="story-feature"]'
+                                )
+                                ?.getAttribute("content")
+                            || ""
+                        ).toLowerCase() === "true"
+                        || base.feature === true
+                };
+
+                discovered.push(finalStory);
+            } else {
+                // Agar chapter detect na ho to old data rakho
+                discovered.push(base);
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Story discover error:",
+                base.link,
+                error
             );
 
-
-        const m =
-          n =>
-            doc.querySelector(
-              `meta[name="${n}"]`
-            )?.content || "";
-
-
-        const titleHi =
-          m("story-title-hi") ||
-          f.name.replace(
-            /\.html$/i,
-            ""
-          );
-
-
-        const titleEn =
-          m("story-title-en") ||
-          titleHi;
-
-
-        const descHi =
-          m("story-desc-hi") ||
-          "";
-
-
-        const descEn =
-          m("story-desc-en") ||
-          descHi;
-
-
-        const cover =
-          (
-            m("story-cover") ||
-            ""
-          ).replace(
-            /^\.\.\//,
-            ""
-          );
-
-
-        const genre =
-          (
-            m("story-genres") ||
-            "Fantasy"
-          )
-          .split(",")
-          .map(
-            x => x.trim()
-          )
-          .filter(Boolean);
-
-
-        const status =
-          m("story-status") ||
-          "ongoing";
-
-
-        /*
-          IMPORTANT:
-          Real chapter count comes
-          directly from story HTML.
-        */
-
-        const chapterNodes =
-          [
-            ...doc.querySelectorAll(
-              ".story-chapter[data-chapter]"
-            )
-          ];
-
-
-        const chapterCount =
-          chapterNodes.length || 1;
-
-
-        const chapterData =
-          chapterNodes.length
-
-            ? chapterNodes.map(
-                (ch,i)=>{
-
-                  const title =
-                    ch.querySelector(
-                      "[data-chapter-title]"
-                    );
-
-
-                  const hi =
-                    title?.dataset.hi ||
-                    `अध्याय ${i+1}`;
-
-
-                  const en =
-                    title?.dataset.en ||
-                    hi;
-
-
-                  return {
-                    number:
-                      Number(
-                        ch.dataset.chapter
-                      ) || i+1,
-
-                    title:{
-                      hi,
-                      en
-                    }
-                  };
-
-                }
-              )
-
-            : Array.from(
-                {length:chapterCount},
-                (_,i)=>({
-
-                  number:i+1,
-
-                  title:{
-                    hi:`अध्याय ${i+1}`,
-                    en:`Chapter ${i+1}`
-                  }
-
-                })
-              );
-
-
-        const link =
-          `stories/${f.name}`;
-
-
-        found.push({
-
-          id:
-            f.name.replace(
-              /\.html$/i,
-              ""
-            ),
-
-          title:{
-            hi:titleHi,
-            en:titleEn
-          },
-
-          desc:{
-            hi:descHi,
-            en:descEn
-          },
-
-          genre,
-
-          cover,
-
-          feature:
-            m("story-feature") === "true",
-
-          status,
-
-          chapters:
-            chapterData,
-
-          link,
-
-          external:true
-
-        });
-
-      }catch(e){
-
-        console.warn(
-          "Story discovery error:",
-          f.name,
-          e
-        );
-
-      }
-
+            // Error hone par original story data delete mat karo
+            discovered.push(base);
+        }
     }
 
+    // ---------------------------------------------------------
+    // 2. ORIGINAL STORIES ARRAY KO UPDATE KARO
+    // ---------------------------------------------------------
+    for (const story of discovered) {
 
-    return found;
+        const index = stories.findIndex(
+            s => s.id === story.id
+        );
 
-  }catch(e){
+        if (index !== -1) {
+            stories[index] = story;
+        }
+    }
 
-    console.warn(
-      "GitHub story discovery failed:",
-      e
-    );
+    // ---------------------------------------------------------
+    // 3. EXTRA HTML STORIES KO OPTIONAL DISCOVER KARO
+    // ---------------------------------------------------------
+    try {
 
-    return [];
+        const apiURL =
+            "https://api.github.com/repos/ajpartner420/Aj-StoryBook/contents/stories";
 
-  }
+        const response = await fetch(apiURL, {
+            cache: "no-store"
+        });
 
+        if (response.ok) {
+
+            const files = await response.json();
+
+            for (const file of files) {
+
+                if (
+                    file.type !== "file" ||
+                    !file.name.toLowerCase().endsWith(".html") ||
+                    file.name.toLowerCase() ===
+                        "story-template.html"
+                ) {
+                    continue;
+                }
+
+                const link =
+                    `stories/${file.name}`;
+
+                // Already registered story ko skip karo
+                if (
+                    stories.some(
+                        s => s.link === link
+                    )
+                ) {
+                    continue;
+                }
+
+                try {
+
+                    const url =
+                        new URL(
+                            link,
+                            location.href
+                        ).href;
+
+                    const r =
+                        await fetch(url, {
+                            cache: "no-store"
+                        });
+
+                    if (!r.ok) continue;
+
+                    const html =
+                        await r.text();
+
+                    const doc =
+                        new DOMParser()
+                            .parseFromString(
+                                html,
+                                "text/html"
+                            );
+
+                    const chapterNodes = [
+                        ...doc.querySelectorAll(
+                            ".story-chapter[data-chapter]"
+                        )
+                    ];
+
+                    if (!chapterNodes.length) {
+                        continue;
+                    }
+
+                    const chapters =
+                        chapterNodes.map(
+                            (chapter, index) => {
+
+                                const titleNode =
+                                    chapter.querySelector(
+                                        "[data-chapter-title]"
+                                    );
+
+                                const number =
+                                    Number(
+                                        chapter.dataset.chapter
+                                    ) || index + 1;
+
+                                return {
+                                    number,
+
+                                    title: {
+                                        hi:
+                                            titleNode?.dataset.hi ||
+                                            `अध्याय ${number}`,
+
+                                        en:
+                                            titleNode?.dataset.en ||
+                                            `Chapter ${number}`
+                                    }
+                                };
+                            }
+                        );
+
+                    const getMeta = name =>
+                        doc
+                            .querySelector(
+                                `meta[name="${name}"]`
+                            )
+                            ?.getAttribute("content")
+                            || "";
+
+                    const newStory = {
+
+                        id:
+                            "story-" +
+                            file.name
+                                .replace(
+                                    /\.html$/i,
+                                    ""
+                                ),
+
+                        link,
+
+                        title: {
+                            hi:
+                                getMeta(
+                                    "story-title-hi"
+                                ) ||
+                                file.name
+                                    .replace(
+                                        /\.html$/i,
+                                        ""
+                                    ),
+
+                            en:
+                                getMeta(
+                                    "story-title-en"
+                                ) ||
+                                file.name
+                                    .replace(
+                                        /\.html$/i,
+                                        ""
+                                    )
+                        },
+
+                        description: {
+                            hi:
+                                getMeta(
+                                    "story-desc-hi"
+                                ),
+
+                            en:
+                                getMeta(
+                                    "story-desc-en"
+                                )
+                        },
+
+                        cover:
+                            getMeta(
+                                "story-cover"
+                            ),
+
+                        genres:
+                            getMeta(
+                                "story-genres"
+                            )
+                                .split(",")
+                                .map(
+                                    x => x.trim()
+                                )
+                                .filter(Boolean),
+
+                        status:
+                            getMeta(
+                                "story-status"
+                            ) || "ongoing",
+
+                        feature:
+                            getMeta(
+                                "story-feature"
+                            ).toLowerCase() ===
+                            "true",
+
+                        chapters
+                    };
+
+                    stories.push(newStory);
+
+                } catch (error) {
+
+                    console.warn(
+                        "Extra story read error:",
+                        file.name,
+                        error
+                    );
+                }
+            }
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "GitHub story discovery skipped:",
+            error
+        );
+    }
+
+    return stories;
 }
-
 
 /* =========================================================
    NEW FIX:
