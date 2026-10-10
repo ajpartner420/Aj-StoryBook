@@ -61,3 +61,34 @@
 .story-lang-en[hidden],.story-lang-hi[hidden]{display:none!important}
 .story-copy-note{font-size:12px;color:var(--muted);margin-top:8px}
 @media(max-width:680px){.story-page-head{grid-template-columns:76px 1fr}.story-page-cover{width:76px;height:100px}.story-page-head h1{font-size:21px}.story-page-tools{grid-column:1/-1}.story-chapter h2{font-size:21px}.story-chapter-nav{flex-wrap:wrap}.story-chapter-nav .muted{order:3;width:100%;text-align:center}}
+
+
+.mayavi-audiobook {
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 16px;
+  background: var(--card-bg, #f5f5f5);
+}
+
+.mayavi-audiobook button {
+  margin: 5px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+#mayaviAudioPlayer[hidden] {
+  display: none;
+}
+
+#mayaviYoutubeFrame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+  border-radius: 12px;
+}
