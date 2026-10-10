@@ -331,5 +331,57 @@
   </template>
 
   <script src="../js/app.js"></script>
+
+  
+<script>
+(function () {
+  document.addEventListener("click", function (event) {
+    const button = event.target.closest(
+      "#mayaviAudiobook [data-youtube-url]"
+    );
+    if (!button) return;
+
+    const url = button.dataset.youtubeUrl;
+    let videoId = "";
+
+    try {
+      const parsed = new URL(url);
+
+      if (parsed.hostname === "youtu.be") {
+        videoId = parsed.pathname.slice(1).split("/")[0];
+      } else if (
+        ["youtube.com", "www.youtube.com", "m.youtube.com",
+         "youtube-nocookie.com", "www.youtube-nocookie.com"]
+          .includes(parsed.hostname)
+      ) {
+        videoId = parsed.searchParams.get("v") ||
+          parsed.pathname.match(/\/(?:embed|shorts|live)\/([^/?]+)/)?.[1] || "";
+      }
+    } catch (error) {}
+
+    if (!/^[\w-]{11}$/.test(videoId)) {
+      document.getElementById("mayaviAudioStatus").textContent =
+        "YouTube link check karein. Sahi video link nahi mila.";
+      return;
+    }
+
+    document.getElementById("mayaviYoutubeFrame").src =
+      "https://www.youtube-nocookie.com/embed/" +
+      videoId + "?autoplay=1";
+
+    document.getElementById("mayaviAudioPlayer").hidden = false;
+
+    document.getElementById("mayaviAudioStatus").textContent =
+      "अध्याय " + button.dataset.audioChapter + " चल रहा है।";
+
+    document.getElementById("mayaviAudioPlayer").scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  });
+})();
+</script>
+
+  
 </body>
 </html>
